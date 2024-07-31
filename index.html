@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en-US">
+  <head>
+      
+    <meta charset="utf-8" />
+    <title>MNIST WASM</title>
+    <script
+          src="https://cdn.jsdelivr.net/npm/fabric@5.3.0/dist/fabric.min.js"
+          integrity="sha256-SPjwkVvrUS/H/htIwO6wdd0IA8eQ79/XXNAH+cPuoso="
+          crossorigin="anonymous"
+    ></script>
+    <script
+    src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.js">
+    </script>
+  </head>
+  
+  <style>
+        body {
+          font-family: Arial, sans-serif;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background-color: #f0f0f0;
+          margin: 0;
+          padding: 20px;
+        }
+  
+        canvas {
+          margin: 10px;
+          border-radius: 8px;
+        }
+  
+        #canvas {
+          border: 2px solid #aaa;
+        }
+  
+        #canvas_scale {
+          border: 2px solid #aaa;
+          border-bottom: 2rem;
+        }
+  
+        #model_result {
+          margin-top: 20px;
+          background-color: #fff;
+          border: 1px solid #aaa;
+          border-radius: 8px;
+        }
+  
+        button {
+          margin: 10px;
+          padding: 10px 20px;
+          font-size: 16px;
+          border: none;
+          border-radius: 8px;
+          cursor: pointer;
+          transition: background-color 0.3s;
+        }
+  
+        #run_button {
+          background-color: #4CAF50;
+          color: white;
+        }
+  
+        #run_button:hover {
+          background-color: #45a049;
+        }
+  
+        #clear_button {
+          background-color: #f44336;
+          color: white;
+        }
+  
+        #clear_button:hover {
+          background-color: #e53935;
+        }
+        
+        .buttons {
+            margin-top: 20px;
+          display: flex;
+          justify-content: center;
+        }
+      </style>
+
+  <body>
+
+    <canvas id="canvas" width="300" height="300" style="border: 1px solid #aaa"></canvas>
+    
+    <div class="buttons">
+        <button id="run_button">Run Model</button>
+        <button id="clear_button">Clear</button>
+    </div>
+    
+    <canvas id="model_result" style="width:100%;max-width:700px"></canvas>
+    <canvas id="canvas_scale" width="28" height="28" style="border: 1px solid #aaa"></canvas>
+    <script type="module">
+        import init, { run_model } from "./pkg/mnist_wasm.js";
+        //import data from "./mnist/mnist_test.csv"
+      
+        const canvas_main = document.getElementById("canvas");
+        const main_ctx = canvas_main.getContext("2d");
+        
+        const canvas = document.getElementById("canvas_scale");
+        const scale_ctx = canvas.getContext("2d");
+        
+        let chart = new Chart("model_result", {
+            type: 'bar',
+            data: {
+                labels: ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'],
+                datasets: [{
+                    label: 'Model Result',
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)',
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)',
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            max: 1,
+                            min: 0
+                        }
+                    }]
+                }
+            }
+        })
+        
+        const run_button = document.getElementById("run_button");
+        const fabricCanvas = new fabric.Canvas(canvas_main, {
+            isDrawingMode: true,
+        });
+      
+        fabricCanvas.freeDrawingBrush.width = 20;
+        
+        run_button.addEventListener("click", model);
+        
+        function model() {
+            // scale_ctx.drawImage(canvas_main, 0, 0, 28, 28);
+            // scale_ctx.filter = 'grayscale(1)'
+            // const img_data = scale_ctx.getImageData(0, 0, canvas.width, canvas.height);
+            
+            // let data = (new Float64Array(img_data.data));
+            // let scaled_data = new Float64Array(784);
+            // let scaled_counter = 0;
+            // for (let i = 3; i < data.length; i += 4) {
+            //     scaled_data[scaled_counter] = data[i] / 255.0 * 0.99 + 0.01;
+            //     scaled_counter++;
+            // }
+            
+            // console.log(scaled_data)
+            init().then(() => {
+                let model_res = run_model(scaled_data);
+                console.log(model_res);
+                chart.data.datasets[0].data = model_res;
+                chart.update();
+            });
+        }
+        
+        const clear_button = document.getElementById("clear_button");
+        clear_button.addEventListener("click", clear);
+        function clear() {
+            fabricCanvas.clear();
+            scale_ctx.clearRect(0, 0, canvas.width, canvas.height);
+            chart.data.datasets[0].data = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+            chart.update();
+        }
+      
+    </script>
+  </body>
+  
+</html>
