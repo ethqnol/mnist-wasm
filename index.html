@@ -173,6 +173,7 @@
             
             // console.log(scaled_data)
             init().then(() => {
+              console.log(data)
                 let model_res = run_model(scaled_data);
                 console.log(model_res);
                 chart.data.datasets[0].data = model_res;
