@@ -1,0 +1,15 @@
+{
+  "name": "mnist-wasm",
+  "type": "module",
+  "version": "0.1.0",
+  "files": [
+    "mnist_wasm_bg.wasm",
+    "mnist_wasm.js",
+    "mnist_wasm.d.ts"
+  ],
+  "main": "mnist_wasm.js",
+  "types": "mnist_wasm.d.ts",
+  "sideEffects": [
+    "./snippets/*"
+  ]
+}
