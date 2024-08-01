@@ -94,7 +94,6 @@
     <canvas id="canvas_scale" width="28" height="28" style="border: 1px solid #aaa"></canvas>
     <script type="module">
         import init, { run_model } from "./pkg/mnist_wasm.js";
-        //import data from "./mnist/mnist_test.csv"
       
         const canvas_main = document.getElementById("canvas");
         const main_ctx = canvas_main.getContext("2d");
@@ -159,21 +158,20 @@
         run_button.addEventListener("click", model);
         
         function model() {
-            // scale_ctx.drawImage(canvas_main, 0, 0, 28, 28);
-            // scale_ctx.filter = 'grayscale(1)'
-            // const img_data = scale_ctx.getImageData(0, 0, canvas.width, canvas.height);
+            scale_ctx.drawImage(canvas_main, 0, 0, 28, 28);
+            scale_ctx.filter = 'grayscale(1)'
+            const img_data = scale_ctx.getImageData(0, 0, 28, 28);
             
-            // let data = (new Float64Array(img_data.data));
-            // let scaled_data = new Float64Array(784);
-            // let scaled_counter = 0;
-            // for (let i = 3; i < data.length; i += 4) {
-            //     scaled_data[scaled_counter] = data[i] / 255.0 * 0.99 + 0.01;
-            //     scaled_counter++;
-            // }
+            let data = (new Float64Array(img_data.data));
+            let scaled_data = new Float64Array(784);
+            let scaled_counter = 0;
+            for (let i = 3; i < data.length; i += 4) {
+                scaled_data[scaled_counter] = data[i] / 255.0 * 0.99 + 0.01;
+                scaled_counter++;
+            }
             
-            // console.log(scaled_data)
+            console.log(scaled_data)
             init().then(() => {
-              console.log(data)
                 let model_res = run_model(scaled_data);
                 console.log(model_res);
                 chart.data.datasets[0].data = model_res;
